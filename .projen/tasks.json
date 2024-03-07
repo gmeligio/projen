@@ -313,15 +313,6 @@
         }
       ]
     },
-    "prepare": {
-      "name": "prepare",
-      "description": "It will run before the package is packaged and installed",
-      "steps": [
-        {
-          "spawn": "package:js"
-        }
-      ]
-    },
     "readme-macros": {
       "name": "readme-macros",
       "steps": [

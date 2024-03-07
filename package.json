@@ -33,7 +33,6 @@
     "post-compile": "node ./projen.js post-compile",
     "post-upgrade": "node ./projen.js post-upgrade",
     "pre-compile": "node ./projen.js pre-compile",
-    "prepare": "node ./projen.js prepare",
     "readme-macros": "node ./projen.js readme-macros",
     "release": "node ./projen.js release",
     "test": "node ./projen.js test",
