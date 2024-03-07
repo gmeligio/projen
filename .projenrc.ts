@@ -396,21 +396,22 @@ function setupBundleTaskRunner() {
   project.postCompileTask.spawn(task);
 }
 
-// function setupPrepareTask() {
-//   const packageJsTask = project.tasks.tryFind("package:js");
+function setupPrepackTask() {
+  const packageJsTask = project.tasks.tryFind("package:js");
 
-//   const prepareTask = project.addTask("prepare", {
-//     description: "It will run before the package is packaged and installed",
-//   });
+  const prepackTask = project.addTask("prepack", {
+    description:
+      "Runs before a tarball is packed and when installing a git dependency",
+  });
 
-//   if (packageJsTask) {
-//     prepareTask.spawn(packageJsTask);
-//   }
-// }
+  if (packageJsTask) {
+    prepackTask.spawn(packageJsTask);
+  }
+}
 
 setupIntegTest();
 setupBundleTaskRunner();
-// setupPrepareTask();
+setupPrepackTask();
 
 // we are projen, so re-synth after compiling.
 // fixes feedback loop where projen contibutors run "build"

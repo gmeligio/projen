@@ -313,6 +313,15 @@
         }
       ]
     },
+    "prepack": {
+      "name": "prepack",
+      "description": "Runs before a tarball is packed and when installing a git dependency",
+      "steps": [
+        {
+          "spawn": "package:js"
+        }
+      ]
+    },
     "readme-macros": {
       "name": "readme-macros",
       "steps": [
