@@ -1,3 +1,4 @@
+import { DEFAULT_ACTIONS } from "./constants";
 import { GitIdentity } from "./task-workflow";
 import { JobStepConfiguration, JobStep } from "./workflows-model";
 import { removeNullOrUndefinedProperties } from "../util/object";
@@ -27,7 +28,7 @@ export class WorkflowSteps {
         ...options,
         name: options.name ?? "Checkout",
       }),
-      uses: "actions/checkout@v5",
+      uses: DEFAULT_ACTIONS.CHECKOUT.coordinate,
       with: Object.keys(checkoutWith).length > 0 ? checkoutWith : undefined,
     };
   }
@@ -110,7 +111,7 @@ export class WorkflowSteps {
         ...options,
         name: options.name ?? "Upload artifact",
       }),
-      uses: "actions/upload-artifact@v4.6.2",
+      uses: DEFAULT_ACTIONS.UPLOAD_ARTIFACT.coordinate,
       with: uploadArtifactWith,
     };
   }
@@ -139,7 +140,7 @@ export class WorkflowSteps {
         ...options,
         name: options?.name ?? "Download artifact",
       }),
-      uses: "actions/download-artifact@v5",
+      uses: DEFAULT_ACTIONS.DOWNLOAD_ARTIFACT.coordinate,
       with: downloadArtifactWith,
     };
   }

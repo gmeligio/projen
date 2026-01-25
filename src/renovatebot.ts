@@ -1,7 +1,5 @@
 import { Component } from "./component";
 import { DependencyType } from "./dependencies";
-import type { GitHub } from "./github";
-import type { Job, JobCallingReusableWorkflow } from "./github/workflows-model";
 import { JsonFile } from "./json";
 import type { Project } from "./project";
 
@@ -144,32 +142,27 @@ export class Renovatebot extends Component {
   }
 
   private createRenovateConfiguration() {
+    // Collect dependencies to ignore, excluding GITHUB_ACTION type
+    // (GitHub Actions are now managed via .projenrc.ts with Renovate comments)
     const renovateIgnore = [
       ...new Set(
         this._project.deps.all
-          .filter((dep) => dep.version || dep.type === DependencyType.OVERRIDE)
+          .filter(
+            (dep) =>
+              (dep.version || dep.type === DependencyType.OVERRIDE) &&
+              dep.type !== DependencyType.GITHUB_ACTION
+          )
           .map((dep) => dep.name)
           .concat(this.explicitIgnores)
       ),
     ];
 
-    // Ignore GitHub Action updates in Projen created workspaces
-    const github: GitHub = (this._project as any).github;
-    if (github?.workflowsEnabled) {
-      const actions: string[] = github.workflows
-        .flatMap((workflow) => Object.values(workflow.jobs))
-        .flatMap((job) => (job as Job).steps)
-        .map((step) => step?.uses?.split("@")[0])
-        .filter((actionName) => !!actionName) as string[];
-
-      const reusableWorkflows: string[] = github.workflows
-        .flatMap((workflow) => Object.values(workflow.jobs))
-        .flatMap((job) => (job as JobCallingReusableWorkflow).uses)
-        .map((reusableWorkflow) => reusableWorkflow?.split("@")[0]);
-
-      renovateIgnore.push(...new Set(actions));
-      renovateIgnore.push(...new Set(reusableWorkflows));
-    }
+    // Note: GitHub Actions are no longer automatically ignored.
+    // They are managed via .projenrc.ts where users can add Renovate comments
+    // to enable automatic version updates. Example:
+    //
+    // project.github?.actions.set("actions/checkout", "v5");
+    // // renovate: datasource=github-tags depName=actions/checkout
 
     return {
       labels: this.labels,
@@ -181,11 +174,32 @@ export class Renovatebot extends Component {
         "group:recommended",
         "group:monorepos",
       ],
+      // Custom manager for GitHub Actions configured in .projenrc.ts
+      customManagers: [
+        {
+          customType: "regex",
+          fileMatch: ["\\.projenrc\\.(ts|js)$"],
+          matchStrings: [
+            // Match patterns like:
+            // .set("actions/checkout", "v5"); // renovate: datasource=github-tags depName=actions/checkout
+            // .set('actions/checkout', 'v5'); // renovate: datasource=github-tags
+            "\\.set\\s*\\(\\s*[\"'](?<depName>[^\"'@]+)[\"']\\s*,\\s*[\"'](?<currentValue>[^\"']+)[\"']\\s*\\)[;\\s]*(?:\\/\\/|\\/\\*)\\s*renovate:\\s*datasource=github-tags",
+          ],
+          datasourceTemplate: "github-tags",
+        },
+      ],
       packageRules: [
         {
           matchDepTypes: ["devDependencies"],
           matchUpdateTypes: ["patch", "minor"],
           groupName: "devDependencies (non-major)",
+        },
+        // Group GitHub Actions updates together
+        {
+          matchManagers: ["custom.regex"],
+          matchFileNames: [".projenrc.ts", ".projenrc.js"],
+          groupName: "GitHub Actions",
+          commitMessageTopic: "GitHub Actions",
         },
       ],
       ignoreDeps: renovateIgnore,

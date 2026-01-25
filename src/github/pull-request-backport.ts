@@ -1,5 +1,6 @@
 import { IConstruct } from "constructs";
 import { AutoApprove } from "./auto-approve";
+import { DEFAULT_ACTIONS } from "./constants";
 import { GitHub } from "./github";
 import { GithubWorkflow } from "./workflows";
 import { Component } from "../component";
@@ -147,6 +148,8 @@ export class PullRequestBackport extends Component {
     const labelPrefixEscaped = labelPrefix.replace(/"/g, '\\"');
     const credentials = workflowEngine.projenCredentials;
 
+    workflowEngine.actions.addActions(DEFAULT_ACTIONS.BACKPORT);
+
     this.workflow.addJob("backport", {
       name: "Backport PR",
       runsOn: ["ubuntu-latest"],
@@ -171,7 +174,7 @@ export class PullRequestBackport extends Component {
         },
         {
           name: "Backport Action",
-          uses: "sqren/backport-github-action@v9.5.1",
+          uses: DEFAULT_ACTIONS.BACKPORT.coordinate,
           // only run this step if we have found matching labels in the previous step
           // this is to prevent workflow failures because the action fails when pre-conditions are not met
           // and causes any PR to be marked with a red X, leading to error blindness.

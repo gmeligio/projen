@@ -347,4 +347,12 @@ export enum DependencyType {
    * It is expected to be installed by the consumer.
    */
   OPTIONAL = "optional",
+
+  /**
+   * A GitHub Action used in GitHub workflows.
+   *
+   * The version field contains the commit SHA for pinning, and the tag
+   * is stored in metadata.tag to use it as a YAML comment.
+   */
+  GITHUB_ACTION = "github-action",
 }

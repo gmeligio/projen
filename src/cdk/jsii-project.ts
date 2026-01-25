@@ -20,6 +20,7 @@ import {
 import { filteredRunsOnOptions } from "../runner-options";
 import { TypeScriptProject, TypeScriptProjectOptions } from "../typescript";
 import { deepMerge } from "../util";
+import { DEFAULT_ACTIONS } from "../github/constants";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+$/;
 const URL_REGEX =
@@ -525,18 +526,21 @@ export class JsiiProject extends TypeScriptProject {
     const bootstrapSteps: Array<Step> = [];
     const packagingSteps: Array<Step> = [];
 
+    this.github?.actions.addActions(DEFAULT_ACTIONS.SETUP_PNPM);
+    this.github?.actions.addActions(DEFAULT_ACTIONS.SETUP_PNPM);
+
     // Generic bootstrapping for all target languages
     bootstrapSteps.push(...this.workflowBootstrapSteps);
     if (this.package.packageManager === NodePackageManager.PNPM) {
       bootstrapSteps.push({
         name: "Setup pnpm",
-        uses: "pnpm/action-setup@v4",
+        uses: DEFAULT_ACTIONS.SETUP_PNPM.coordinate,
         with: { version: this.package.pnpmVersion },
       });
     } else if (this.package.packageManager === NodePackageManager.BUN) {
       bootstrapSteps.push({
         name: "Setup bun",
-        uses: "oven-sh/setup-bun@v2",
+        uses: DEFAULT_ACTIONS.SETUP_BUN.coordinate,
         with: { "bun-version": this.package.bunVersion },
       });
     }

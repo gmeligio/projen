@@ -279,12 +279,12 @@ describe("github-workflow", () => {
     workflow.addJob("working-dir", {
       runsOn: ["ubuntu-latest"],
       permissions: {},
-      steps: [{ uses: "actions/checkout@v4" }],
+      steps: [{ uses: "actions/cache@v3" }],
     });
     workflow.updateJob("working-dir", {
       runsOn: ["ubuntu-latest"],
       permissions: {},
-      steps: [{ uses: "actions/checkout@v2" }],
+      steps: [{ uses: "actions/cache@v4" }],
     });
 
     const snapshot = synthSnapshot(project);
@@ -294,7 +294,7 @@ describe("github-workflow", () => {
       snapshot[`.github/workflows/${workflowName}.yml`]
     );
     expect(workflowYAML.jobs["working-dir"].steps[0].uses).toEqual(
-      "actions/checkout@v2"
+      "actions/cache@v4"
     );
   });
 
@@ -318,6 +318,7 @@ describe("github-workflow", () => {
 
     test("can override the action used in a step", () => {
       const project = new TestProject();
+      const replacementCommit = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
 
       const ghw = new GithubWorkflow(project.github!, workflowName);
       ghw.addJob("working-dir", {
@@ -328,18 +329,19 @@ describe("github-workflow", () => {
 
       project.github?.actions.set(
         "actions/checkout@v4",
-        "replacement/checkout"
+        `replacement/checkout@${replacementCommit}`
       );
 
       const snapshot = synthSnapshot(project);
       const wf = snapshot[`.github/workflows/${workflowName}.yml`];
 
       expect(wf).not.toContain("actions/checkout@v4");
-      expect(wf).toContain("replacement/checkout");
+      expect(wf).toContain(`replacement/checkout@${replacementCommit}`);
     });
 
     test("can override action without explicitly defining version", () => {
       const project = new TestProject();
+      const replacementCommit = "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb";
 
       const ghw = new GithubWorkflow(project.github!, workflowName);
       ghw.addJob("working-dir", {
@@ -348,17 +350,22 @@ describe("github-workflow", () => {
         steps: [{ uses: "actions/checkout@v4" }],
       });
 
-      project.github?.actions.set("actions/checkout", "replacement/checkout");
+      project.github?.actions.set(
+        "actions/checkout",
+        `replacement/checkout@${replacementCommit}`
+      );
 
       const snapshot = synthSnapshot(project);
       const wf = snapshot[`.github/workflows/${workflowName}.yml`];
 
       expect(wf).not.toContain("actions/checkout@v4");
-      expect(wf).toContain("replacement/checkout");
+      expect(wf).toContain(`replacement/checkout@${replacementCommit}`);
     });
 
     test("can override multiple versions and the default", () => {
       const project = new TestProject();
+      const explicitV4Commit = "cccccccccccccccccccccccccccccccccccccccc";
+      const genericCommit = "dddddddddddddddddddddddddddddddddddddddd";
 
       const ghw = new GithubWorkflow(project.github!, workflowName);
       ghw.addJob("working-dir", {
@@ -373,11 +380,11 @@ describe("github-workflow", () => {
 
       project.github?.actions.set(
         "actions/checkout@v4",
-        "actions/checkout@explicit-v4"
+        `actions/checkout@${explicitV4Commit}`
       );
       project.github?.actions.set(
         "actions/checkout",
-        "actions/checkout@generic-override"
+        `actions/checkout@${genericCommit}`
       );
 
       const snapshot = synthSnapshot(project);
@@ -387,8 +394,8 @@ describe("github-workflow", () => {
       expect(wf).not.toContain("actions/checkout@v2");
       expect(wf).not.toContain("actions/checkout@v3");
       expect(wf).not.toContain("actions/checkout@v4");
-      expect(wf).toContain("actions/checkout@explicit-v4");
-      expect(wf).toContain("actions/checkout@generic-override");
+      expect(wf).toContain(`actions/checkout@${explicitV4Commit}`);
+      expect(wf).toContain(`actions/checkout@${genericCommit}`);
     });
   });
 
@@ -419,7 +426,7 @@ describe("github-workflow", () => {
             permissions: {}
             steps:
               - name: Download artifact
-                uses: actions/download-artifact@v5
+                uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         "
       `);
     });
@@ -453,7 +460,7 @@ describe("github-workflow", () => {
             permissions: {}
             steps:
               - name: Download artifact
-                uses: actions/download-artifact@v5
+                uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
                 with:
                   name: foobar
         "

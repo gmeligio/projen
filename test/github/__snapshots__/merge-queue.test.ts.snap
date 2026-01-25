@@ -18,7 +18,7 @@ jobs:
       pull-requests: write
       contents: write
     steps:
-      - uses: peter-evans/enable-pull-request-automerge@v3
+      - uses: peter-evans/enable-pull-request-automerge@b9890d06ee695786c8a5162e17cffea87dc2783c # v3
         with:
           token: \${{ secrets.PROJEN_GITHUB_TOKEN }}
           pull-request-number: \${{ github.event.number }}
@@ -49,7 +49,7 @@ jobs:
       contents: write
     if: (github.event.action == 'opened' || (github.event.action == 'edited' && github.event.changes.base))
     steps:
-      - uses: peter-evans/enable-pull-request-automerge@v3
+      - uses: peter-evans/enable-pull-request-automerge@b9890d06ee695786c8a5162e17cffea87dc2783c # v3
         with:
           token: \${{ secrets.PROJEN_GITHUB_TOKEN }}
           pull-request-number: \${{ github.event.number }}
@@ -76,7 +76,7 @@ jobs:
       contents: write
     if: (contains(github.event.pull_request.labels.*.name, 'abc')) && (github.event.pull_request.user.login == 'foo')
     steps:
-      - uses: peter-evans/enable-pull-request-automerge@v3
+      - uses: peter-evans/enable-pull-request-automerge@b9890d06ee695786c8a5162e17cffea87dc2783c # v3
         with:
           token: \${{ secrets.shh }}
           pull-request-number: \${{ github.event.number }}

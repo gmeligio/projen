@@ -1,4 +1,5 @@
 import { GitHub, PullRequestTemplate } from ".";
+import { DEFAULT_ACTIONS } from "./constants";
 import { Job, JobPermission } from "./workflows-model";
 import { Component } from "../component";
 import { GroupRunnerOptions, filteredRunsOnOptions } from "../runner-options";
@@ -141,6 +142,8 @@ export class PullRequestLint extends Component {
       const opts = options.semanticTitleOptions ?? {};
       const types = opts.types ?? ["feat", "fix", "chore"];
 
+      github.actions.addActions(DEFAULT_ACTIONS.SEMANTIC_PR);
+
       const validateJob: Job = {
         name: "Validate PR title",
         if: prCheck,
@@ -150,7 +153,7 @@ export class PullRequestLint extends Component {
         },
         steps: [
           {
-            uses: "amannn/action-semantic-pull-request@v6",
+            uses: DEFAULT_ACTIONS.SEMANTIC_PR.coordinate,
             env: {
               GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}",
             },
@@ -194,6 +197,8 @@ export class PullRequestLint extends Component {
         }
       };
 
+      github.actions.addActions(DEFAULT_ACTIONS.GITHUB_SCRIPT);
+
       const helpMessage =
         "Contributor statement missing from PR description. Please include the following text in the PR description";
       const contributorStatement: Job = {
@@ -210,7 +215,7 @@ export class PullRequestLint extends Component {
         },
         steps: [
           {
-            uses: "actions/github-script@v8",
+            uses: DEFAULT_ACTIONS.GITHUB_SCRIPT.coordinate,
             with: {
               script: fnBody(script),
             },

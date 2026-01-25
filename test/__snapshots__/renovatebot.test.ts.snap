@@ -2,6 +2,18 @@
 
 exports[`renovatebot renovatebot: override renovatebot configuration 1`] = `
 {
+  "customManagers": [
+    {
+      "customType": "regex",
+      "datasourceTemplate": "github-tags",
+      "fileMatch": [
+        "\\.projenrc\\.(ts|js)$",
+      ],
+      "matchStrings": [
+        "\\.set\\s*\\(\\s*["'](?<depName>[^"'@]+)["']\\s*,\\s*["'](?<currentValue>[^"']+)["']\\s*\\)[;\\s]*(?:\\/\\/|\\/\\*)\\s*renovate:\\s*datasource=github-tags",
+      ],
+    },
+  ],
   "extends": [
     "customExtend",
   ],
@@ -15,6 +27,18 @@ exports[`renovatebot renovatebot: override renovatebot configuration 1`] = `
 
 exports[`renovatebot renovatebot: true creates renovatebot configuration 1`] = `
 {
+  "customManagers": [
+    {
+      "customType": "regex",
+      "datasourceTemplate": "github-tags",
+      "fileMatch": [
+        "\\.projenrc\\.(ts|js)$",
+      ],
+      "matchStrings": [
+        "\\.set\\s*\\(\\s*["'](?<depName>[^"'@]+)["']\\s*,\\s*["'](?<currentValue>[^"']+)["']\\s*\\)[;\\s]*(?:\\/\\/|\\/\\*)\\s*renovate:\\s*datasource=github-tags",
+      ],
+    },
+  ],
   "extends": [
     ":preserveSemverRanges",
     "config:recommended",
@@ -24,7 +48,6 @@ exports[`renovatebot renovatebot: true creates renovatebot configuration 1`] = `
   ],
   "ignoreDeps": [
     "projen",
-    "amannn/action-semantic-pull-request",
   ],
   "labels": [
     "renotate",
@@ -39,6 +62,17 @@ exports[`renovatebot renovatebot: true creates renovatebot configuration 1`] = `
       "matchUpdateTypes": [
         "patch",
         "minor",
+      ],
+    },
+    {
+      "commitMessageTopic": "GitHub Actions",
+      "groupName": "GitHub Actions",
+      "matchFileNames": [
+        ".projenrc.ts",
+        ".projenrc.js",
+      ],
+      "matchManagers": [
+        "custom.regex",
       ],
     },
   ],

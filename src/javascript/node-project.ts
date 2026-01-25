@@ -57,6 +57,21 @@ import { Task } from "../task";
 import { deepMerge, multipleSelected, normalizePersistedPath } from "../util";
 import { ensureRelativePathStartsWithDot } from "../util/path";
 
+// codecov/codecov-action@v5
+const CODECOV_ACTION =
+  "codecov/codecov-action@0565863a31f2c772f9f0395002a31e3f06189574";
+// aws-actions/configure-aws-credentials@v4
+const CONFIGURE_AWS_CREDENTIALS =
+  "aws-actions/configure-aws-credentials@e3dd6a429d7300a6a4c196c26e071d42e0343502";
+// pnpm/action-setup@v4
+const PNPM_ACTION_SETUP =
+  "pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda";
+// oven-sh/setup-bun@v2
+const SETUP_BUN = "oven-sh/setup-bun@735343b667d3e6f658f44e0eca948eb6282f2b76";
+// actions/setup-node@v4
+const SETUP_NODE =
+  "actions/setup-node@cdca7365b2dadb8aad0a33bc7601856ffabcc48e";
+
 const PROJEN_SCRIPT = "projen";
 
 /**
@@ -1011,7 +1026,7 @@ export class NodeProject extends GitHubProject {
       return [
         {
           name: "Upload coverage to Codecov",
-          uses: "codecov/codecov-action@v5",
+          uses: CODECOV_ACTION,
           with: options.codeCovTokenSecret
             ? {
                 token: `\${{ secrets.${options.codeCovTokenSecret} }}`,
@@ -1132,7 +1147,7 @@ export class NodeProject extends GitHubProject {
       return [
         {
           name: "Configure AWS Credentials",
-          uses: "aws-actions/configure-aws-credentials@v5",
+          uses: CONFIGURE_AWS_CREDENTIALS,
           with: {
             "aws-region": "us-east-2",
             "role-to-assume": parsedCodeArtifactOptions.roleToAssume,
@@ -1150,7 +1165,7 @@ export class NodeProject extends GitHubProject {
       return [
         {
           name: "Configure AWS Credentials",
-          uses: "aws-actions/configure-aws-credentials@v5",
+          uses: CONFIGURE_AWS_CREDENTIALS,
           with: {
             "aws-access-key-id": secretToString(
               parsedCodeArtifactOptions.accessKeyIdSecret
@@ -1204,13 +1219,13 @@ export class NodeProject extends GitHubProject {
     if (this.package.packageManager === NodePackageManager.PNPM) {
       install.push({
         name: "Setup pnpm",
-        uses: "pnpm/action-setup@v4",
+        uses: PNPM_ACTION_SETUP,
         with: { version: this.package.pnpmVersion },
       });
     } else if (this.package.packageManager === NodePackageManager.BUN) {
       install.push({
         name: "Setup bun",
-        uses: "oven-sh/setup-bun@v2",
+        uses: SETUP_BUN,
         with: { "bun-version": this.package.bunVersion },
       });
     }
@@ -1226,7 +1241,7 @@ export class NodeProject extends GitHubProject {
             : "npm";
         install.push({
           name: "Setup Node.js",
-          uses: "actions/setup-node@v5",
+          uses: SETUP_NODE,
           with: {
             ...(this.nodeVersion && {
               "node-version": this.nodeVersion,

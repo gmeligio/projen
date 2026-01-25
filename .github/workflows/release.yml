@@ -22,7 +22,7 @@ jobs:
       CI: "true"
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           fetch-depth: 0
       - name: Set git identity
@@ -30,7 +30,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
       - name: Setup Node.js
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@cdca7365b2dadb8aad0a33bc7601856ffabcc48e # v5
         with:
           node-version: lts/-1
       - name: Install dependencies
@@ -38,7 +38,7 @@ jobs:
       - name: release
         run: node ./projen.js release
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@0565863a31f2c772f9f0395002a31e3f06189574
         with:
           directory: coverage
           use_oidc: true
@@ -60,7 +60,7 @@ jobs:
         continue-on-error: true
       - name: Upload artifact
         if: ${{ steps.git_remote.outputs.latest_commit == github.sha }}
-        uses: actions/upload-artifact@v4.6.2
+        uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08
         with:
           name: build-artifact
           path: dist
@@ -80,11 +80,11 @@ jobs:
     environment: release
     if: needs.release.outputs.tag_exists != 'true' && needs.release.outputs.latest_commit == github.sha
     steps:
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@cdca7365b2dadb8aad0a33bc7601856ffabcc48e # v5
         with:
           node-version: lts/-1
       - name: Download build artifacts
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
         with:
           name: build-artifact
           path: dist
@@ -102,7 +102,7 @@ jobs:
         shell: bash
       - name: Create Issue
         if: ${{ failure() }}
-        uses: imjohnbo/issue-bot@v3
+        uses: imjohnbo/issue-bot@572eed14422c4d6ca37e1a1aa5e6f731b22fe20b
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -120,11 +120,11 @@ jobs:
     environment: release
     if: needs.release.outputs.tag_exists != 'true' && needs.release.outputs.latest_commit == github.sha
     steps:
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@cdca7365b2dadb8aad0a33bc7601856ffabcc48e # v5
         with:
           node-version: 24.x
       - name: Download build artifacts
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
         with:
           name: build-artifact
           path: dist
@@ -132,7 +132,7 @@ jobs:
         run: cd dist && setfacl --restore=permissions-backup.acl
         continue-on-error: true
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           path: .repo
       - name: Install Dependencies
@@ -159,7 +159,7 @@ jobs:
         shell: bash
       - name: Create Issue
         if: ${{ failure() }}
-        uses: imjohnbo/issue-bot@v3
+        uses: imjohnbo/issue-bot@572eed14422c4d6ca37e1a1aa5e6f731b22fe20b
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -176,15 +176,15 @@ jobs:
     environment: release
     if: needs.release.outputs.tag_exists != 'true' && needs.release.outputs.latest_commit == github.sha
     steps:
-      - uses: actions/setup-java@v5
+      - uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00 # v5
         with:
           distribution: corretto
           java-version: "11"
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@cdca7365b2dadb8aad0a33bc7601856ffabcc48e # v5
         with:
           node-version: lts/-1
       - name: Download build artifacts
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
         with:
           name: build-artifact
           path: dist
@@ -192,7 +192,7 @@ jobs:
         run: cd dist && setfacl --restore=permissions-backup.acl
         continue-on-error: true
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           path: .repo
       - name: Install Dependencies
@@ -221,7 +221,7 @@ jobs:
         shell: bash
       - name: Create Issue
         if: ${{ failure() }}
-        uses: imjohnbo/issue-bot@v3
+        uses: imjohnbo/issue-bot@572eed14422c4d6ca37e1a1aa5e6f731b22fe20b
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -239,14 +239,14 @@ jobs:
     environment: release
     if: needs.release.outputs.tag_exists != 'true' && needs.release.outputs.latest_commit == github.sha
     steps:
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@cdca7365b2dadb8aad0a33bc7601856ffabcc48e # v5
         with:
           node-version: lts/-1
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v6
         with:
           python-version: 3.x
       - name: Download build artifacts
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
         with:
           name: build-artifact
           path: dist
@@ -254,7 +254,7 @@ jobs:
         run: cd dist && setfacl --restore=permissions-backup.acl
         continue-on-error: true
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           path: .repo
       - name: Install Dependencies
@@ -278,7 +278,7 @@ jobs:
         shell: bash
       - name: Create Issue
         if: ${{ failure() }}
-        uses: imjohnbo/issue-bot@v3
+        uses: imjohnbo/issue-bot@572eed14422c4d6ca37e1a1aa5e6f731b22fe20b
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -295,14 +295,14 @@ jobs:
     environment: release
     if: needs.release.outputs.tag_exists != 'true' && needs.release.outputs.latest_commit == github.sha
     steps:
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@cdca7365b2dadb8aad0a33bc7601856ffabcc48e # v5
         with:
           node-version: lts/-1
-      - uses: actions/setup-go@v6
+      - uses: actions/setup-go@d35c59abb061a4a6fb18e82ac0862c26744d6ab5 # v6
         with:
           go-version: ^1.18.0
       - name: Download build artifacts
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
         with:
           name: build-artifact
           path: dist
@@ -310,7 +310,7 @@ jobs:
         run: cd dist && setfacl --restore=permissions-backup.acl
         continue-on-error: true
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           path: .repo
       - name: Install Dependencies
@@ -336,7 +336,7 @@ jobs:
         shell: bash
       - name: Create Issue
         if: ${{ failure() }}
-        uses: imjohnbo/issue-bot@v3
+        uses: imjohnbo/issue-bot@572eed14422c4d6ca37e1a1aa5e6f731b22fe20b
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:

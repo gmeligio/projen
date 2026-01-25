@@ -329,6 +329,12 @@ export class UpgradeDependencies extends Component {
       steps.push({ exec: ncuCommand });
     }
 
+    // upgrade GitHub Actions versions using actions-up
+    // this runs non-interactively and pins actions to commit SHAs
+    if (GitHub.of(this.project)) {
+      steps.push({ exec: this.buildActionsUpCommand() });
+    }
+
     // run "yarn/npm install" to update the lockfile and install any deps (such as projen)
     steps.push({ exec: this.project.package.installAndUpdateLockfileCommand });
 
@@ -402,6 +408,35 @@ export class UpgradeDependencies extends Component {
     command.push(`--filter=${includePackages.join(",")}`);
 
     return command.join(" ");
+  }
+
+  /**
+   * Build actions-up command for upgrading GitHub Actions.
+   * Uses non-interactive mode to update all actions to latest versions,
+   * pinned to commit SHAs with version comments.
+   */
+  private buildActionsUpCommand(): string {
+    const executeCommand = this.getPackageExecuteCommand();
+    return `${executeCommand} actions-up --yes`;
+  }
+
+  /**
+   * Get the package manager specific command to execute a package.
+   */
+  private getPackageExecuteCommand(): string {
+    switch (this.project.package.packageManager) {
+      case NodePackageManager.NPM:
+      case NodePackageManager.YARN:
+      case NodePackageManager.YARN_CLASSIC:
+        return "npx";
+      case NodePackageManager.PNPM:
+        return "pnpm dlx";
+      case NodePackageManager.YARN2:
+      case NodePackageManager.YARN_BERRY:
+        return "yarn dlx";
+      case NodePackageManager.BUN:
+        return "bunx";
+    }
   }
 
   /**
@@ -607,7 +642,11 @@ export class UpgradeDependencies extends Component {
         name: "Upgrade",
         container: this.containerOptions,
         permissions: this.permissions,
-        env: this.options.workflowOptions?.env,
+        env: {
+          ...this.options.workflowOptions?.env,
+          // GITHUB_TOKEN is needed for actions-up to have higher API rate limits
+          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}",
+        },
         ...filteredRunsOnOptions(
           this.options.workflowOptions?.runsOn,
           this.options.workflowOptions?.runsOnGroup

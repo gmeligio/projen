@@ -1,4 +1,5 @@
 import * as Case from "case";
+import { DEFAULT_ACTIONS } from "./constants";
 import { JobStep, AppPermissions } from "./workflows-model";
 
 /**
@@ -137,7 +138,7 @@ export class GithubCredentials {
         {
           name: "Generate token",
           id: "generate_token",
-          uses: "actions/create-github-app-token@3ff1caaa28b64c9cc276ce0a02e2ff584f3900c5",
+          uses: DEFAULT_ACTIONS.CREATE_GITHUB_APP_TOKEN.coordinate,
           with: {
             ...actionConfig,
             ...permissions,

@@ -1,3 +1,4 @@
+import { DEFAULT_ACTIONS } from "./constants";
 import { GitHub } from "./github";
 import { Job, JobPermission } from "./workflows-model";
 import { Component } from "../component";
@@ -74,6 +75,8 @@ export class AutoApprove extends Component {
 
     const secret = options.secret ?? "GITHUB_TOKEN";
 
+    github.actions.addActions(DEFAULT_ACTIONS.AUTO_APPROVE);
+
     const approveJob: Job = {
       ...filteredRunsOnOptions(options.runsOn, options.runsOnGroup),
       permissions: {
@@ -82,7 +85,7 @@ export class AutoApprove extends Component {
       if: condition,
       steps: [
         {
-          uses: "hmarr/auto-approve-action@f0939ea97e9205ef24d872e76833fa908a770363",
+          uses: DEFAULT_ACTIONS.AUTO_APPROVE.coordinate,
           with: {
             "github-token": `\${{ secrets.${secret} }}`,
           },

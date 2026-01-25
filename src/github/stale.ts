@@ -1,3 +1,4 @@
+import { DEFAULT_ACTIONS } from "./constants";
 import { GitHub } from "./github";
 import { renderBehavior } from "./stale-util";
 import { JobPermission } from "./workflows-model";
@@ -98,7 +99,7 @@ export interface StaleBehavior {
  * The default configuration will:
  *
  *  * Add a "Stale" label to pull requests after 14 days and closed after 2 days
- *  * Add a "Stale" label to issues after 60 days and closed after 7 days
+ *  * Add a "Stale" label to issues after 60 days and closed within 7 days
  *  * If a comment is added, the label will be removed and timer is restarted.
  *
  * @see https://github.com/actions/stale
@@ -131,6 +132,8 @@ export class Stale extends Component {
       return exemptLabels.join(",");
     };
 
+    github.actions.addActions(DEFAULT_ACTIONS.STALE);
+
     stale.addJobs({
       stale: {
         ...filteredRunsOnOptions(options.runsOn, options.runsOnGroup),
@@ -140,7 +143,7 @@ export class Stale extends Component {
         },
         steps: [
           {
-            uses: "actions/stale@v10",
+            uses: DEFAULT_ACTIONS.STALE.coordinate,
             with: {
               // disable global
               "days-before-stale": -1,

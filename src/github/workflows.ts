@@ -1,6 +1,7 @@
 import { extname } from "node:path";
 import { snake } from "case";
 import { GitHubActionsProvider } from "./actions-provider";
+import { DEFAULT_ACTIONS } from "./constants";
 import { GitHub } from "./github";
 import { GithubCredentials } from "./github-credentials";
 import * as workflows from "./workflows-model";
@@ -275,6 +276,13 @@ export class GithubWorkflow extends Component {
   }
 
   private renderWorkflow() {
+    const renderedJobs = this.renderJobs(this._jobs);
+
+    // Add tags after the jobs are rendered and the exact position of each `step.uses` is known
+    if (this.file) {
+      this.addActionTagComments(renderedJobs);
+    }
+
     return {
       name: this.name,
       "run-name": this.runName,
@@ -286,44 +294,53 @@ export class GithubWorkflow extends Component {
           }
         : undefined,
       env: this.env,
-      jobs: renderJobs(this._jobs, this.actions),
+      jobs: renderedJobs,
     };
   }
-}
 
-function snakeCaseKeys<T = unknown>(obj: T): T {
-  if (typeof obj !== "object" || obj == null) {
-    return obj;
-  }
+  /**
+   * Add inline comments with action tags to the YAML file.
+   * This enables tools like Renovate to track the human-readable version tags.
+   */
+  private addActionTagComments(renderedJobs: Record<string, unknown>): void {
+    for (const [jobId, job] of Object.entries(renderedJobs)) {
+      const jobObj = job as Record<string, unknown>;
+      const steps = jobObj.steps as Array<Record<string, unknown>> | undefined;
 
-  if (Array.isArray(obj)) {
-    return obj.map(snakeCaseKeys) as any;
-  }
+      if (!steps) {
+        continue;
+      }
 
-  const result: Record<string, unknown> = {};
-  for (let [k, v] of Object.entries(obj)) {
-    if (typeof v === "object" && v != null) {
-      v = snakeCaseKeys(v);
+      for (let stepIndex = 0; stepIndex < steps.length; stepIndex++) {
+        const step = steps[stepIndex];
+        const uses = step.uses as string | undefined;
+
+        if (uses) {
+          // Extract the action name from the uses string (e.g., "actions/checkout@sha")
+          const actionName = uses.split("@")[0];
+          const tag = this.actions.getTag(actionName);
+
+          if (tag) {
+            const path = `jobs.${jobId}.steps.${stepIndex}.uses`;
+            this.file!.addInlineComment(path, tag);
+          }
+        }
+      }
     }
-    result[snake(k)] = v;
   }
-  return result as any;
-}
 
-function renderJobs(
-  jobs: Record<string, workflows.Job | workflows.JobCallingReusableWorkflow>,
-  actions: GitHubActionsProvider
-) {
-  const result: Record<string, unknown> = {};
-  for (const [name, job] of Object.entries(jobs)) {
-    result[name] = renderJob(job);
+  private renderJobs(
+    jobs: Record<string, workflows.Job | workflows.JobCallingReusableWorkflow>
+  ) {
+    const result: Record<string, unknown> = {};
+    for (const [name, job] of Object.entries(jobs)) {
+      result[name] = this.renderJob(job);
+    }
+    return result;
   }
-  return result;
 
   /** @see https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions */
-  function renderJob(
-    job: workflows.Job | workflows.JobCallingReusableWorkflow
-  ) {
+  private renderJob(job: workflows.Job | workflows.JobCallingReusableWorkflow) {
     const steps = new Array<workflows.JobStep>();
 
     // https://docs.github.com/en/actions/using-workflows/reusing-workflows#supported-keywords-for-jobs-that-call-a-reusable-workflow
@@ -337,12 +354,12 @@ function renderJobs(
         uses: job.uses,
         with: job.with,
         secrets: job.secrets,
-        strategy: renderJobStrategy(job.strategy),
+        strategy: this.renderJobStrategy(job.strategy),
       };
     }
 
     if (job.tools) {
-      steps.push(...setupTools(job.tools));
+      steps.push(...this.setupTools(job.tools));
     }
 
     const userDefinedSteps = kebabCaseKeys(resolve(job.steps), false);
@@ -355,20 +372,20 @@ function renderJobs(
       permissions: kebabCaseKeys(job.permissions),
       environment: job.environment,
       concurrency: job.concurrency,
-      outputs: renderJobOutputs(job.outputs),
+      outputs: this.renderJobOutputs(job.outputs),
       env: job.env,
       defaults: kebabCaseKeys(job.defaults),
       if: job.if,
-      steps: steps.map(renderStep),
+      steps: steps.map((step) => this.renderStep(step)),
       "timeout-minutes": job.timeoutMinutes,
-      strategy: renderJobStrategy(job.strategy),
+      strategy: this.renderJobStrategy(job.strategy),
       "continue-on-error": job.continueOnError,
       container: job.container,
       services: job.services,
     };
   }
 
-  function renderJobOutputs(output: workflows.Job["outputs"]) {
+  private renderJobOutputs(output: workflows.Job["outputs"]) {
     if (output == null) {
       return undefined;
     }
@@ -380,7 +397,7 @@ function renderJobs(
     return rendered;
   }
 
-  function renderJobStrategy(strategy: workflows.Job["strategy"]) {
+  private renderJobStrategy(strategy: workflows.Job["strategy"]) {
     if (strategy == null) {
       return undefined;
     }
@@ -410,12 +427,12 @@ function renderJobs(
     return rendered;
   }
 
-  function renderStep(step: workflows.JobStep) {
+  private renderStep(step: workflows.JobStep) {
     return {
       name: step.name,
       id: step.id,
       if: step.if,
-      uses: step.uses && actions.get(step.uses),
+      uses: step.uses && this.actions.get(step.uses),
       env: step.env,
       run: step.run,
       shell: step.shell,
@@ -425,6 +442,71 @@ function renderJobs(
       "working-directory": step.workingDirectory,
     };
   }
+
+  private setupTools(tools: workflows.Tools) {
+    const steps: workflows.JobStep[] = [];
+
+    if (tools.java) {
+      this.actions.addActions(DEFAULT_ACTIONS.SETUP_JAVA);
+      steps.push({
+        uses: DEFAULT_ACTIONS.SETUP_JAVA.coordinate,
+        with: { distribution: "corretto", "java-version": tools.java.version },
+      });
+    }
+
+    if (tools.node) {
+      this.actions.addActions(DEFAULT_ACTIONS.SETUP_NODE);
+      steps.push({
+        uses: DEFAULT_ACTIONS.SETUP_NODE.coordinate,
+        with: { "node-version": tools.node.version },
+      });
+    }
+
+    if (tools.python) {
+      this.actions.addActions(DEFAULT_ACTIONS.SETUP_PYTHON);
+      steps.push({
+        uses: DEFAULT_ACTIONS.SETUP_PYTHON.coordinate,
+        with: { "python-version": tools.python.version },
+      });
+    }
+
+    if (tools.go) {
+      this.actions.addActions(DEFAULT_ACTIONS.SETUP_GO);
+      steps.push({
+        uses: DEFAULT_ACTIONS.SETUP_GO.coordinate,
+        with: { "go-version": tools.go.version },
+      });
+    }
+
+    if (tools.dotnet) {
+      this.actions.addActions(DEFAULT_ACTIONS.SETUP_DOTNET);
+      steps.push({
+        uses: DEFAULT_ACTIONS.SETUP_DOTNET.coordinate,
+        with: { "dotnet-version": tools.dotnet.version },
+      });
+    }
+
+    return steps;
+  }
+}
+
+function snakeCaseKeys<T = unknown>(obj: T): T {
+  if (typeof obj !== "object" || obj == null) {
+    return obj;
+  }
+
+  if (Array.isArray(obj)) {
+    return obj.map(snakeCaseKeys) as any;
+  }
+
+  const result: Record<string, unknown> = {};
+  for (let [k, v] of Object.entries(obj)) {
+    if (typeof v === "object" && v != null) {
+      v = snakeCaseKeys(v);
+    }
+    result[snake(k)] = v;
+  }
+  return result as any;
 }
 
 function arrayOrScalar<T>(arr: T | T[] | undefined): T | T[] | undefined {
@@ -438,47 +520,6 @@ function arrayOrScalar<T>(arr: T | T[] | undefined): T | T[] | undefined {
     return arr[0];
   }
   return arr;
-}
-
-function setupTools(tools: workflows.Tools) {
-  const steps: workflows.JobStep[] = [];
-
-  if (tools.java) {
-    steps.push({
-      uses: "actions/setup-java@v5",
-      with: { distribution: "corretto", "java-version": tools.java.version },
-    });
-  }
-
-  if (tools.node) {
-    steps.push({
-      uses: "actions/setup-node@v5",
-      with: { "node-version": tools.node.version },
-    });
-  }
-
-  if (tools.python) {
-    steps.push({
-      uses: "actions/setup-python@v6",
-      with: { "python-version": tools.python.version },
-    });
-  }
-
-  if (tools.go) {
-    steps.push({
-      uses: "actions/setup-go@v6",
-      with: { "go-version": tools.go.version },
-    });
-  }
-
-  if (tools.dotnet) {
-    steps.push({
-      uses: "actions/setup-dotnet@v5",
-      with: { "dotnet-version": tools.dotnet.version },
-    });
-  }
-
-  return steps;
 }
 
 function verifyJobConstraints(

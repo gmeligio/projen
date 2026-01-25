@@ -150,7 +150,7 @@ export class GitHub extends Component {
   public constructor(project: Project, options: GitHubOptions = {}) {
     super(project);
 
-    this.actions = new GitHubActionsProvider();
+    this.actions = new GitHubActionsProvider(project);
 
     this.workflowsEnabled = options.workflows ?? true;
 

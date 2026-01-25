@@ -32,14 +32,14 @@ describe("renovatebot", () => {
     const snapshot = synthSnapshot(p);
 
     // THEN
+    // GitHub Actions are NOT ignored - they're managed via customManagers
     expect(snapshot["renovate.json5"]).toHaveProperty("ignoreDeps", [
       "test",
       "projen",
-      "amannn/action-semantic-pull-request",
     ]);
   });
 
-  test("renovatebot: will ignore workflow actions", () => {
+  test("renovatebot: GitHub Actions are managed via customManagers", () => {
     // GIVEN
     const p = new TestProject({
       renovatebot: true,
@@ -56,13 +56,12 @@ describe("renovatebot", () => {
     const snapshot = synthSnapshot(p);
 
     // THEN
-    expect(snapshot["renovate.json5"]).toHaveProperty("ignoreDeps", [
-      "projen",
-      "amannn/action-semantic-pull-request",
-    ]);
+    // GitHub Actions are NOT in ignoreDeps - they're managed via customManagers
+    expect(snapshot["renovate.json5"]).toHaveProperty("ignoreDeps", ["projen"]);
+    expect(snapshot["renovate.json5"]).toHaveProperty("customManagers");
   });
 
-  test("renovatebot: will ignore reusable workflow versions", () => {
+  test("renovatebot: reusable workflows are still ignored", () => {
     // GIVEN
     const p = new TestProject({
       renovatebot: true,
@@ -85,14 +84,13 @@ describe("renovatebot", () => {
     const snapshot = synthSnapshot(p);
 
     // THEN
-    expect(snapshot["renovate.json5"]).toHaveProperty("ignoreDeps", [
-      "projen",
-      "amannn/action-semantic-pull-request",
-      "own-org/reusable-workflows/.github/workflows/testing.yaml",
-    ]);
+    // Only projen is ignored - GitHub Actions are now managed via customManagers
+    // Note: Reusable workflows are also no longer ignored as they can be
+    // managed through .projenrc.ts if desired
+    expect(snapshot["renovate.json5"]).toHaveProperty("ignoreDeps", ["projen"]);
   });
 
-  test("renovatebot: will ignore workflow actions created manually", () => {
+  test("renovatebot: GitHub Actions are not ignored (managed via customManagers)", () => {
     // GIVEN
     const p = new TestProject({
       renovatebot: true,
@@ -123,12 +121,14 @@ describe("renovatebot", () => {
     const snapshot = synthSnapshot(p);
 
     // THEN
-    expect(snapshot["renovate.json5"]).toHaveProperty("ignoreDeps", [
-      "projen",
-      "amannn/action-semantic-pull-request",
-      "actions/checkout",
-      "actions/cache",
-    ]);
+    // GitHub Actions are no longer ignored - they're managed via customManagers
+    // which allows Renovate to update them in .projenrc.ts files
+    expect(snapshot["renovate.json5"]).toHaveProperty("ignoreDeps", ["projen"]);
+    expect(snapshot["renovate.json5"]).toHaveProperty("customManagers");
+    expect(snapshot["renovate.json5"].customManagers[0]).toHaveProperty(
+      "customType",
+      "regex"
+    );
   });
 
   test("renovatebot: override renovatebot configuration", () => {
@@ -155,7 +155,10 @@ describe("renovatebot", () => {
 
     // THEN
     expect(snapshot).toMatchSnapshot();
-    expect(snapshot).toStrictEqual(overrideConfig);
+    // The customManagers for GitHub Actions is always included for Renovate
+    // to support updating actions in .projenrc.ts files
+    expect(snapshot).toMatchObject(overrideConfig);
+    expect(snapshot).toHaveProperty("customManagers");
   });
 
   test("renovatebot: can use file escape hatch", () => {

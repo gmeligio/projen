@@ -206,6 +206,46 @@
       "type": "bundled"
     },
     {
+      "name": "actions/github-script",
+      "version": "60a0d83039c74a4aee543508d2ffcb1c3799cdea",
+      "type": "github-action",
+      "metadata": {
+        "tag": "v8"
+      }
+    },
+    {
+      "name": "amannn/action-semantic-pull-request",
+      "version": "5d6e5e2ff54bec29e72e52cd1b79d543e7186669",
+      "type": "github-action",
+      "metadata": {
+        "tag": "v6"
+      }
+    },
+    {
+      "name": "hmarr/auto-approve-action",
+      "version": "f0939ea97e9205ef24d872e76833fa908a770363",
+      "type": "github-action",
+      "metadata": {
+        "tag": "v4"
+      }
+    },
+    {
+      "name": "peter-evans/enable-pull-request-automerge",
+      "version": "b9890d06ee695786c8a5162e17cffea87dc2783c",
+      "type": "github-action",
+      "metadata": {
+        "tag": "v3"
+      }
+    },
+    {
+      "name": "pnpm/action-setup",
+      "version": "a7487c7e89a18df4991f7f222e4898a00d66ddda",
+      "type": "github-action",
+      "metadata": {
+        "tag": "v4"
+      }
+    },
+    {
       "name": "constructs",
       "version": "^10.0.0",
       "type": "peer"

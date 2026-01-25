@@ -56,6 +56,9 @@ test("allows configuring specific dependency types", () => {
         "exec": "npx npm-check-updates@18 --upgrade --target=minor --peer --no-deprecated --dep=prod,dev --filter=some-dep,jest,projen",
       },
       {
+        "exec": "npx actions-up --yes",
+      },
+      {
         "exec": "yarn install --check-files",
       },
       {
@@ -81,7 +84,8 @@ test("upgrade command includes only dependencies of configured types", () => {
     },
   });
   const tasks = synthSnapshot(project)[TaskRuntime.MANIFEST_FILE].tasks;
-  expect(tasks.upgrade.steps[2].exec).toStrictEqual(
+  // steps[1] is actions-up, steps[2] is install, steps[3] is upgrade packages
+  expect(tasks.upgrade.steps[3].exec).toStrictEqual(
     `yarn upgrade commit-and-tag-version constructs jest jest-junit projen some-dev-dep`
   );
 });
@@ -96,6 +100,9 @@ test("upgrades command includes all dependencies", () => {
     [
       {
         "exec": "npx npm-check-updates@18 --upgrade --target=minor --peer --no-deprecated --dep=dev,peer,prod,optional --filter=jest,projen,some-dep",
+      },
+      {
+        "exec": "npx actions-up --yes",
       },
       {
         "exec": "yarn install --check-files",
@@ -121,11 +128,15 @@ test("ncu upgrade command does not include dependencies with any version constra
   const tasks = synthSnapshot(project)[TaskRuntime.MANIFEST_FILE].tasks;
 
   expect(tasks.upgrade.steps[0].exec).not.toContain("some-dep");
-  expect(tasks.upgrade.steps[2].exec).toContain("some-dep");
+  // steps[1] is actions-up, steps[2] is install, steps[3] is upgrade packages
+  expect(tasks.upgrade.steps[3].exec).toContain("some-dep");
   expect(tasks.upgrade.steps).toMatchInlineSnapshot(`
     [
       {
         "exec": "npx npm-check-updates@18 --upgrade --target=minor --peer --no-deprecated --dep=dev,peer,prod,optional --filter=jest,projen",
+      },
+      {
+        "exec": "npx actions-up --yes",
       },
       {
         "exec": "yarn install --check-files",
@@ -151,11 +162,15 @@ test("ncu upgrade command should include dependencies with * versions, along wit
   const tasks = synthSnapshot(project)[TaskRuntime.MANIFEST_FILE].tasks;
 
   expect(tasks.upgrade.steps[0].exec).toContain("some-dep");
-  expect(tasks.upgrade.steps[2].exec).toContain("some-dep");
+  // steps[1] is actions-up, steps[2] is install, steps[3] is upgrade packages
+  expect(tasks.upgrade.steps[3].exec).toContain("some-dep");
   expect(tasks.upgrade.steps).toMatchInlineSnapshot(`
     [
       {
         "exec": "npx npm-check-updates@18 --upgrade --target=minor --peer --no-deprecated --dep=dev,peer,prod,optional --filter=jest,projen,some-dep",
+      },
+      {
+        "exec": "npx actions-up --yes",
       },
       {
         "exec": "yarn install --check-files",
@@ -193,6 +208,9 @@ test("ncu upgrade command is not added if no ncu upgrades are needed", () => {
   expect(tasks.upgrade.steps).toMatchInlineSnapshot(`
     [
       {
+        "exec": "npx actions-up --yes",
+      },
+      {
         "exec": "yarn install --check-files",
       },
       {
@@ -218,6 +236,9 @@ test("upgrades command includes dependencies added post instantiation", () => {
     [
       {
         "exec": "npx npm-check-updates@18 --upgrade --target=minor --peer --no-deprecated --dep=dev,peer,prod,optional --filter=jest,projen,some-dep",
+      },
+      {
+        "exec": "npx actions-up --yes",
       },
       {
         "exec": "yarn install --check-files",
@@ -250,6 +271,9 @@ test("upgrades command doesn't include ignored packages", () => {
         "exec": "npx npm-check-updates@18 --upgrade --target=minor --peer --no-deprecated --dep=dev,peer,prod,optional --filter=jest,projen,dep1",
       },
       {
+        "exec": "npx actions-up --yes",
+      },
+      {
         "exec": "yarn install --check-files",
       },
       {
@@ -277,7 +301,8 @@ test("upgrades command includes only included packages", () => {
   expect(tasks.upgrade.steps[0].exec).toMatchInlineSnapshot(
     `"npx npm-check-updates@18 --upgrade --target=minor --peer --no-deprecated --dep=dev,peer,prod,optional --filter=dep1"`
   );
-  expect(tasks.upgrade.steps[2].exec).toStrictEqual(`yarn upgrade dep1`);
+  // steps[1] is actions-up, steps[2] is install, steps[3] is upgrade packages
+  expect(tasks.upgrade.steps[3].exec).toStrictEqual(`yarn upgrade dep1`);
 });
 
 test("upgrade task can be overwritten", () => {
@@ -504,6 +529,9 @@ test("upgrade task created without projen defined versions at NodeProject", () =
         "exec": "npx npm-check-updates@18 --upgrade --target=minor --peer --no-deprecated --dep=dev,peer,prod,optional --filter=jest,projen",
       },
       {
+        "exec": "npx actions-up --yes",
+      },
+      {
         "exec": "yarn install --check-files",
       },
       {
@@ -548,6 +576,9 @@ test("uses the proper yarn berry upgrade command", () => {
     [
       {
         "exec": "yarn dlx npm-check-updates@18 --upgrade --target=minor --peer --no-deprecated --dep=dev,peer,prod,optional --filter=jest,projen",
+      },
+      {
+        "exec": "yarn dlx actions-up --yes",
       },
       {
         "exec": "yarn install",
@@ -650,7 +681,8 @@ test("cooldown adds flags to npm-check-updates and pnpm", () => {
 
   const tasks = synthSnapshot(project)[TaskRuntime.MANIFEST_FILE].tasks;
   expect(tasks.upgrade.steps[0].exec).toContain("--cooldown=3");
-  expect(tasks.upgrade.steps[2].exec).toContain(
+  // steps[1] is actions-up, steps[2] is install, steps[3] is upgrade packages
+  expect(tasks.upgrade.steps[3].exec).toContain(
     "--config.minimum-release-age=4320"
   );
 });
@@ -666,7 +698,8 @@ test("cooldown adds flags to npm-check-updates and bun", () => {
 
   const tasks = synthSnapshot(project)[TaskRuntime.MANIFEST_FILE].tasks;
   expect(tasks.upgrade.steps[0].exec).toContain("--cooldown=3");
-  expect(tasks.upgrade.steps[2].exec).toContain("--minimum-release-age=259200");
+  // steps[1] is actions-up, steps[2] is install, steps[3] is upgrade packages
+  expect(tasks.upgrade.steps[3].exec).toContain("--minimum-release-age=259200");
 });
 
 test("cooldown adds flags to npm-check-updates and yarn berry", () => {

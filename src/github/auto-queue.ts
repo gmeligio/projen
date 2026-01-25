@@ -1,4 +1,5 @@
 import { IConstruct } from "constructs";
+import { DEFAULT_ACTIONS } from "./constants";
 import { Component } from "../component";
 import * as gh from "../github";
 
@@ -147,6 +148,8 @@ export class AutoQueue extends Component {
       options.projenCredentials ?? workflowEngine.projenCredentials;
     const mergeMethod = options.mergeMethod ?? MergeMethod.SQUASH;
 
+    workflowEngine.actions.addActions(DEFAULT_ACTIONS.ENABLE_PR_AUTOMERGE);
+
     const autoQueueJob: gh.workflows.Job = {
       name: "Set AutoQueue on PR #${{ github.event.number }}",
       runsOn: options.runsOn ?? ["ubuntu-latest"],
@@ -159,7 +162,7 @@ export class AutoQueue extends Component {
       steps: [
         ...credentials.setupSteps,
         {
-          uses: "peter-evans/enable-pull-request-automerge@v3",
+          uses: DEFAULT_ACTIONS.ENABLE_PR_AUTOMERGE.coordinate,
           with: {
             token: credentials.tokenRef,
             "pull-request-number": "${{ github.event.number }}",

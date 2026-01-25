@@ -1,5 +1,5 @@
 import { GitIdentity, GithubCredentials } from ".";
-import { DEFAULT_GITHUB_ACTIONS_USER } from "./constants";
+import { DEFAULT_GITHUB_ACTIONS_USER, DEFAULT_ACTIONS } from "./constants";
 import { context, isHiddenPath } from "./private/util";
 import { CheckoutWith, WorkflowSteps } from "./workflow-steps";
 import { JobStep } from "./workflows-model";
@@ -83,7 +83,7 @@ export class WorkflowActions {
       WorkflowSteps.checkout({ with: restOfOptions }),
       {
         name: "Download patch",
-        uses: "actions/download-artifact@v5",
+        uses: DEFAULT_ACTIONS.DOWNLOAD_ARTIFACT.coordinate,
         with: { name: GIT_PATCH_FILE, path: RUNNER_TEMP },
       },
       {
@@ -129,7 +129,7 @@ export class WorkflowActions {
       {
         name: stepName,
         id: stepId,
-        uses: "peter-evans/create-pull-request@v7",
+        uses: DEFAULT_ACTIONS.CREATE_PULL_REQUEST.coordinate,
         with: {
           token: options.credentials?.tokenRef,
           "commit-message": `${title}\n\n${description}`,

@@ -10,6 +10,7 @@ import {
 } from "../github";
 import {
   BUILD_ARTIFACT_NAME,
+  DEFAULT_ACTIONS,
   DEFAULT_GITHUB_ACTIONS_USER,
   PERMISSION_BACKUP_FILE,
 } from "../github/constants";
@@ -40,6 +41,10 @@ import {
   SELF_MUTATION_STEP,
 } from "./private/consts";
 import { workflowNameForProject } from "../util/name";
+
+// actions/download-artifact@v4
+const DOWNLOAD_ARTIFACT =
+  "actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093";
 
 export interface BuildWorkflowCommonOptions {
   /**
@@ -257,10 +262,12 @@ export class BuildWorkflow extends Component {
   public addPostBuildJob(id: string, job: Job) {
     const steps = [];
 
+    this.github.actions.addActions(DEFAULT_ACTIONS.AUTO_APPROVE);
+
     steps.push(
       {
         name: "Download build artifacts",
-        uses: "actions/download-artifact@v5",
+        uses: DOWNLOAD_ARTIFACT,
         with: {
           name: BUILD_ARTIFACT_NAME,
           path: this.artifactsDirectory,

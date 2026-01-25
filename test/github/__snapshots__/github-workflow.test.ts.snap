@@ -10,9 +10,9 @@ jobs:
     runs-on: ubuntu-latest
     permissions: {}
     steps:
-      - uses: actions/checkout@generic-override
-      - uses: actions/checkout@generic-override
-      - uses: actions/checkout@explicit-v4
+      - uses: actions/checkout@dddddddddddddddddddddddddddddddddddddddd
+      - uses: actions/checkout@dddddddddddddddddddddddddddddddddddddddd
+      - uses: actions/checkout@cccccccccccccccccccccccccccccccccccccccc
 "
 `;
 
@@ -26,7 +26,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions: {}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v5
 "
 `;
 
@@ -133,7 +133,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions: {}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/cache@v4
 "
 `;
 
