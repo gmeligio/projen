@@ -5,6 +5,7 @@ import {
   PULL_REQUEST_REF,
   PULL_REQUEST_REPOSITORY,
 } from "../build/private/consts";
+import { DEFAULT_ACTIONS } from "../github/constants";
 import { WorkflowSteps } from "../github/workflow-steps";
 import { Job, JobPermission, Step, Tools } from "../github/workflows-model";
 import { NodePackageManager } from "../javascript";
@@ -20,7 +21,6 @@ import {
 import { filteredRunsOnOptions } from "../runner-options";
 import { TypeScriptProject, TypeScriptProjectOptions } from "../typescript";
 import { deepMerge } from "../util";
-import { DEFAULT_ACTIONS } from "../github/constants";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+$/;
 const URL_REGEX =

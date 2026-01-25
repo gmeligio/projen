@@ -2,8 +2,8 @@ import { DependencyType } from "../../src/dependencies";
 import { GitHubActionsProvider } from "../../src/github/actions-provider";
 import { TestProject } from "../util";
 
-const validCommit = "11bd71901bbe5b1630ceea73d27597364c9af683";
-const anotherValidCommit = "cdca7365b2dadb8aad0a33bc7601856ffabcc48e";
+const commit1 = "11bd71901bbe5b1630ceea73d27597364c9af683";
+const commit2 = "cdca7365b2dadb8aad0a33bc7601856ffabcc48e";
 
 describe("GitHubActionsProvider", () => {
   describe("addActions", () => {
@@ -11,14 +11,14 @@ describe("GitHubActionsProvider", () => {
       const project = new TestProject();
       const actions = new GitHubActionsProvider(project);
 
-      actions.addActions(`actions/checkout@${validCommit}`);
+      actions.addActions(`actions/checkout@${commit1}`);
 
       const dep = project.deps.tryGetDependency(
         "actions/checkout",
         DependencyType.GITHUB_ACTION
       );
       expect(dep).toBeDefined();
-      expect(dep?.version).toBe(validCommit);
+      expect(dep?.version).toBe(commit1);
     });
 
     test("adds action with optional tag", () => {
@@ -26,7 +26,7 @@ describe("GitHubActionsProvider", () => {
       const actions = new GitHubActionsProvider(project);
 
       actions.addActions({
-        coordinate: `actions/checkout@${validCommit}`,
+        coordinate: `actions/checkout@${commit1}`,
         tag: "v5",
       });
 
@@ -35,7 +35,7 @@ describe("GitHubActionsProvider", () => {
         DependencyType.GITHUB_ACTION
       );
       expect(dep).toBeDefined();
-      expect(dep?.version).toBe(validCommit);
+      expect(dep?.version).toBe(commit1);
       expect(dep?.metadata?.tag).toBe("v5");
     });
 
@@ -43,8 +43,8 @@ describe("GitHubActionsProvider", () => {
       const project = new TestProject();
       const actions = new GitHubActionsProvider(project);
 
-      actions.addActions(`actions/checkout@${validCommit}`, {
-        coordinate: `actions/setup-node@${anotherValidCommit}`,
+      actions.addActions(`actions/checkout@${commit1}`, {
+        coordinate: `actions/setup-node@${commit2}`,
         tag: "v5",
       });
 
@@ -59,8 +59,8 @@ describe("GitHubActionsProvider", () => {
 
       expect(checkout).toBeDefined();
       expect(setupNode).toBeDefined();
-      expect(checkout?.version).toBe(validCommit);
-      expect(setupNode?.version).toBe(anotherValidCommit);
+      expect(checkout?.version).toBe(commit1);
+      expect(setupNode?.version).toBe(commit2);
     });
 
     test("throws error for action without commit SHA", () => {
@@ -96,13 +96,13 @@ describe("GitHubActionsProvider", () => {
       const project = new TestProject();
       const actions = new GitHubActionsProvider(project);
 
-      actions.set("actions/checkout", `actions/checkout@${validCommit}`, "v5");
+      actions.set("actions/checkout", `actions/checkout@${commit1}`, "v5");
 
       expect(actions.get("actions/checkout")).toBe(
-        `actions/checkout@${validCommit}`
+        `actions/checkout@${commit1}`
       );
       expect(actions.get("actions/checkout@v4")).toBe(
-        `actions/checkout@${validCommit}`
+        `actions/checkout@${commit1}`
       );
     });
 
@@ -121,10 +121,10 @@ describe("GitHubActionsProvider", () => {
       const project = new TestProject();
       const actions = new GitHubActionsProvider(project);
 
-      actions.set("actions/checkout", `actions/checkout@${validCommit}`);
+      actions.set("actions/checkout", `actions/checkout@${commit1}`);
 
       expect(actions.get("actions/checkout@v4")).toBe(
-        `actions/checkout@${validCommit}`
+        `actions/checkout@${commit1}`
       );
     });
 
@@ -132,10 +132,10 @@ describe("GitHubActionsProvider", () => {
       const project = new TestProject();
       const actions = new GitHubActionsProvider(project);
 
-      actions.addActions(`actions/checkout@${validCommit}`);
+      actions.addActions(`actions/checkout@${commit1}`);
 
       expect(actions.get("actions/checkout")).toBe(
-        `actions/checkout@${validCommit}`
+        `actions/checkout@${commit1}`
       );
     });
 
@@ -143,9 +143,9 @@ describe("GitHubActionsProvider", () => {
       const project = new TestProject();
       const actions = new GitHubActionsProvider(project);
 
-      const result = actions.get(`actions/checkout@${validCommit}`);
+      const result = actions.get(`actions/checkout@${commit1}`);
 
-      expect(result).toBe(`actions/checkout@${validCommit}`);
+      expect(result).toBe(`actions/checkout@${commit1}`);
 
       // Should be registered as a dependency now
       const dep = project.deps.tryGetDependency(
@@ -153,7 +153,7 @@ describe("GitHubActionsProvider", () => {
         DependencyType.GITHUB_ACTION
       );
       expect(dep).toBeDefined();
-      expect(dep?.version).toBe(validCommit);
+      expect(dep?.version).toBe(commit1);
     });
 
     test("passes through legacy tag-based references", () => {
@@ -178,7 +178,7 @@ describe("GitHubActionsProvider", () => {
       const actions = new GitHubActionsProvider(project);
 
       actions.addActions({
-        coordinate: `actions/checkout@${validCommit}`,
+        coordinate: `actions/checkout@${commit1}`,
         tag: "v5",
       });
 
@@ -189,7 +189,7 @@ describe("GitHubActionsProvider", () => {
       const project = new TestProject();
       const actions = new GitHubActionsProvider(project);
 
-      actions.set("actions/checkout", `actions/checkout@${validCommit}`, "v5");
+      actions.set("actions/checkout", `actions/checkout@${commit1}`, "v5");
 
       expect(actions.getTag("actions/checkout")).toBe("v5");
     });
@@ -198,7 +198,7 @@ describe("GitHubActionsProvider", () => {
       const project = new TestProject();
       const actions = new GitHubActionsProvider(project);
 
-      actions.addActions(`actions/checkout@${validCommit}`);
+      actions.addActions(`actions/checkout@${commit1}`);
 
       expect(actions.getTag("actions/checkout")).toBeUndefined();
     });

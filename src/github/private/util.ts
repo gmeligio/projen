@@ -61,3 +61,12 @@ export function projectPathRelativeToRepoRoot(project: Project): string {
     normalizePersistedPath(relative(project.root.outdir, project.outdir))
   );
 }
+
+/**
+ * Returns true if the given string is a valid commit hash
+ * @param commit
+ * @returns
+ */
+export function validCommit(commit: string): boolean {
+  return /^[a-f0-9]{40}$/i.test(commit);
+}

@@ -1,5 +1,6 @@
 import { DependencyType } from "../dependencies";
 import type { Project } from "../project";
+import { validCommit as isValidCommit } from "./private/util";
 
 /**
  * Action specification for explicit version control.
@@ -102,9 +103,9 @@ export class GitHubActionsProvider {
     const name = action.substring(0, atIndex);
     const commit = action.substring(atIndex + 1);
 
-    if (requireCommit && !/^[a-f0-9]{40}$/i.test(commit)) {
+    if (requireCommit && !isValidCommit(commit)) {
       throw new Error(
-        `Invalid action commit: "${commit}" in "${action}". Expected a 40-character hexadecimal SHA, not a tag or branch.`
+        `Invalid action commit: "${commit}" in "${action}". Expected a 40-character hexadecimal SHA, not a tag or branch. You can get the commit SHA from https://github.com/${action}/tags`
       );
     }
 
@@ -190,20 +191,40 @@ export class GitHubActionsProvider {
    * Resolve an action name to the full coordinate that should be used.
    * Also auto-adds actions from uses: fields for backward compatibility.
    *
-   * Resolution order:
-   * 1. Exact override match (action@version)
-   * 2. Action name override (without version)
-   * 3. Added dependency
-   * 4. Auto-add from action string if it has a valid commit SHA
-   * 5. Passthrough for legacy formats (e.g., action@v5) - will be updated by actions-up
+   * @throws Error if no valid action is found.
    */
   public get(action: string): string {
-    const atIndex = action.lastIndexOf("@");
-    const name = atIndex >= 0 ? action.substring(0, atIndex) : action;
-    const version = atIndex >= 0 ? action.substring(atIndex + 1) : undefined;
+    const { name, commit } = this.parseActionCoordinate(action, false);
 
+    const found = this.getAction(name, commit);
+    if (found) {
+      return found;
+    }
+
+    // Auto-add if it's a valid action@commit coordinate
+    if (commit && isValidCommit(commit)) {
+      this.addAction(name, commit);
+      return action;
+    }
+
+    // Error if legPassthrough for unknown/legacy formats (e.g., action@v5)
+    throw new Error(
+      `No valid action found with format: "namespace/action@commit". You can get the commit SHA from https://github.com/${action}/tags`
+    );
+  }
+
+  /**
+   * Resolve an action name to the full coordinate that should be used.
+   *
+   * Resolution order:
+   * 1. Exact name and version override
+   * 2. Only name override
+   * 3. Added dependency
+   * 5. Undefined
+   */
+  private getAction(name: string, commit: string): string | undefined {
     // Check for explicit overrides first
-    const exactOverride = this.overrides.get(action);
+    const exactOverride = this.overrides.get(`${name}@${commit}`);
     if (exactOverride) {
       return exactOverride.coordinate;
     }
@@ -222,15 +243,7 @@ export class GitHubActionsProvider {
       return `${name}@${dep.version}`;
     }
 
-    // Auto-add if it looks like a valid action@commit coordinate
-    if (version && /^[a-f0-9]{40}$/i.test(version)) {
-      this.addAction(name, version);
-      return action;
-    }
-
-    // Passthrough for unknown/legacy formats (e.g., action@v5)
-    // These will be updated by actions-up tool during upgrade workflow
-    return action;
+    return undefined;
   }
 
   /**
