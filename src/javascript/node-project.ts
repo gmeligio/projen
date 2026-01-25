@@ -24,7 +24,10 @@ import {
 } from "../github";
 import { Biome, BiomeOptions } from "./biome/biome";
 import { isYarnBerry, isYarnClassic } from "./util";
-import { DEFAULT_GITHUB_ACTIONS_USER } from "../github/constants";
+import {
+  DEFAULT_ACTIONS,
+  DEFAULT_GITHUB_ACTIONS_USER,
+} from "../github/constants";
 import { ensureNotHiddenPath, secretToString } from "../github/private/util";
 import {
   JobPermission,
@@ -56,21 +59,6 @@ import { filteredRunsOnOptions } from "../runner-options";
 import { Task } from "../task";
 import { deepMerge, multipleSelected, normalizePersistedPath } from "../util";
 import { ensureRelativePathStartsWithDot } from "../util/path";
-
-// codecov/codecov-action@v5
-const CODECOV_ACTION =
-  "codecov/codecov-action@0565863a31f2c772f9f0395002a31e3f06189574";
-// aws-actions/configure-aws-credentials@v4
-const CONFIGURE_AWS_CREDENTIALS =
-  "aws-actions/configure-aws-credentials@e3dd6a429d7300a6a4c196c26e071d42e0343502";
-// pnpm/action-setup@v4
-const PNPM_ACTION_SETUP =
-  "pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda";
-// oven-sh/setup-bun@v2
-const SETUP_BUN = "oven-sh/setup-bun@735343b667d3e6f658f44e0eca948eb6282f2b76";
-// actions/setup-node@v4
-const SETUP_NODE =
-  "actions/setup-node@cdca7365b2dadb8aad0a33bc7601856ffabcc48e";
 
 const PROJEN_SCRIPT = "projen";
 
@@ -1026,7 +1014,7 @@ export class NodeProject extends GitHubProject {
       return [
         {
           name: "Upload coverage to Codecov",
-          uses: CODECOV_ACTION,
+          uses: DEFAULT_ACTIONS.CODECOV.coordinate,
           with: options.codeCovTokenSecret
             ? {
                 token: `\${{ secrets.${options.codeCovTokenSecret} }}`,
@@ -1147,7 +1135,7 @@ export class NodeProject extends GitHubProject {
       return [
         {
           name: "Configure AWS Credentials",
-          uses: CONFIGURE_AWS_CREDENTIALS,
+          uses: DEFAULT_ACTIONS.CONFIGURE_AWS_CREDENTIALS.coordinate,
           with: {
             "aws-region": "us-east-2",
             "role-to-assume": parsedCodeArtifactOptions.roleToAssume,
@@ -1165,7 +1153,7 @@ export class NodeProject extends GitHubProject {
       return [
         {
           name: "Configure AWS Credentials",
-          uses: CONFIGURE_AWS_CREDENTIALS,
+          uses: DEFAULT_ACTIONS.CONFIGURE_AWS_CREDENTIALS.coordinate,
           with: {
             "aws-access-key-id": secretToString(
               parsedCodeArtifactOptions.accessKeyIdSecret
@@ -1219,13 +1207,13 @@ export class NodeProject extends GitHubProject {
     if (this.package.packageManager === NodePackageManager.PNPM) {
       install.push({
         name: "Setup pnpm",
-        uses: PNPM_ACTION_SETUP,
+        uses: DEFAULT_ACTIONS.PNPM_ACTION_SETUP.coordinate,
         with: { version: this.package.pnpmVersion },
       });
     } else if (this.package.packageManager === NodePackageManager.BUN) {
       install.push({
         name: "Setup bun",
-        uses: SETUP_BUN,
+        uses: DEFAULT_ACTIONS.SETUP_BUN.coordinate,
         with: { "bun-version": this.package.bunVersion },
       });
     }
@@ -1241,7 +1229,7 @@ export class NodeProject extends GitHubProject {
             : "npm";
         install.push({
           name: "Setup Node.js",
-          uses: SETUP_NODE,
+          uses: DEFAULT_ACTIONS.SETUP_NODE.coordinate,
           with: {
             ...(this.nodeVersion && {
               "node-version": this.nodeVersion,

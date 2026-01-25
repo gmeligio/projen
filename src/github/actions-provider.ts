@@ -21,7 +21,7 @@ export interface ActionSpec {
  * Manage the versions used for GitHub Actions in workflows.
  *
  * Similar to NodePackage for npm dependencies, this class provides
- * convenience methods for registering and resolving GitHub Actions
+ * convenience methods for adding and resolving GitHub Actions
  * while delegating storage to the project's Dependencies component.
  *
  * Actions are tracked as dependencies with type GITHUB_ACTION in deps.json.
@@ -74,12 +74,12 @@ export class GitHubActionsProvider {
 
   private addActionFromString(action: string): void {
     const { name, commit } = this.parseActionCoordinate(action);
-    this.registerAction(name, commit);
+    this.addAction(name, commit);
   }
 
   private addActionFromSpec(spec: ActionSpec): void {
     const { name, commit } = this.parseActionCoordinate(spec.coordinate);
-    this.registerAction(name, commit, spec.tag);
+    this.addAction(name, commit, spec.tag);
   }
 
   /**
@@ -111,7 +111,7 @@ export class GitHubActionsProvider {
     return { name, commit };
   }
 
-  private registerAction(name: string, commit: string, tag?: string): void {
+  private addAction(name: string, commit: string, tag?: string): void {
     this.project.logger.debug(
       `github-action ${name}@${commit}${tag ? ` # ${tag}` : ""}`
     );
@@ -136,7 +136,7 @@ export class GitHubActionsProvider {
    * **Override Resolution Priority:**
    * 1. Exact version override (e.g., "actions/checkout@v4")
    * 2. General action override (e.g., "actions/checkout")
-   * 3. Registered dependency
+   * 3. Add dependency
    * 4. Passthrough for legacy formats
    *
    * **Security Note:** The override coordinate must include a commit SHA, not a tag.
@@ -182,20 +182,19 @@ export class GitHubActionsProvider {
    * // Result: foo@v2 uses aaaa..., foo@v3 uses ffff..., foo@v4 uses ffff..., etc.
    */
   public set(action: string, override: string, tag?: string): void {
-    // Validate override format - must include a commit SHA for security
     this.parseActionCoordinate(override);
     this.overrides.set(action, { coordinate: override, tag });
   }
 
   /**
    * Resolve an action name to the full coordinate that should be used.
-   * Also auto-registers actions from uses: fields for backward compatibility.
+   * Also auto-adds actions from uses: fields for backward compatibility.
    *
    * Resolution order:
    * 1. Exact override match (action@version)
    * 2. Action name override (without version)
-   * 3. Registered dependency
-   * 4. Auto-register from action string if it has a valid commit SHA
+   * 3. Added dependency
+   * 4. Auto-add from action string if it has a valid commit SHA
    * 5. Passthrough for legacy formats (e.g., action@v5) - will be updated by actions-up
    */
   public get(action: string): string {
@@ -214,7 +213,7 @@ export class GitHubActionsProvider {
       return nameOverride.coordinate;
     }
 
-    // Check if already registered as a dependency
+    // Check if already added as a dependency
     const dep = this.project.deps.tryGetDependency(
       name,
       DependencyType.GITHUB_ACTION
@@ -223,9 +222,9 @@ export class GitHubActionsProvider {
       return `${name}@${dep.version}`;
     }
 
-    // Auto-register if it looks like a valid action@commit coordinate
+    // Auto-add if it looks like a valid action@commit coordinate
     if (version && /^[a-f0-9]{40}$/i.test(version)) {
-      this.registerAction(name, version);
+      this.addAction(name, version);
       return action;
     }
 
@@ -252,7 +251,7 @@ export class GitHubActionsProvider {
       return override.tag;
     }
 
-    // Get tag from registered action dependency
+    // Get tag from action dependency
     const dep = this.project.deps.tryGetDependency(
       name,
       DependencyType.GITHUB_ACTION

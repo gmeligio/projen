@@ -2,6 +2,7 @@ import { BranchOptions } from "./release";
 import { Component } from "../component";
 import {
   BUILD_ARTIFACT_NAME,
+  DEFAULT_ACTIONS,
   DEFAULT_GITHUB_ACTIONS_USER,
   PERMISSION_BACKUP_FILE,
 } from "../github/constants";
@@ -16,15 +17,6 @@ import { defaultNpmToken } from "../javascript/node-package";
 import { Project } from "../project";
 import { GroupRunnerOptions, filteredRunsOnOptions } from "../runner-options";
 import { CHANGES_SINCE_LAST_RELEASE } from "../version";
-
-// aws-actions/configure-aws-credentials@v4
-const CONFIGURE_AWS_CREDENTIALS =
-  "aws-actions/configure-aws-credentials@e3dd6a429d7300a6a4c196c26e071d42e0343502";
-// actions/download-artifact@v4
-const DOWNLOAD_ARTIFACT =
-  "actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093";
-// imjohnbo/issue-bot@v3
-const ISSUE_BOT = "imjohnbo/issue-bot@572eed14422c4d6ca37e1a1aa5e6f731b22fe20b";
 
 const PUBLIB_VERSION = "latest";
 
@@ -390,7 +382,7 @@ export class Publisher extends Component {
       const region = options.registry?.match(regionCaptureRegex)?.[1];
       prePublishSteps.push({
         name: "Configure AWS Credentials via GitHub OIDC Provider",
-        uses: CONFIGURE_AWS_CREDENTIALS,
+        uses: DEFAULT_ACTIONS.CONFIGURE_AWS_CREDENTIALS.coordinate,
         with: {
           "role-to-assume": options.codeArtifactOptions.roleToAssume,
           "aws-region": region,
@@ -619,7 +611,7 @@ export class Publisher extends Component {
         permissions = { ...permissions, idToken: JobPermission.WRITE };
         prePublishSteps.push({
           name: "Configure AWS Credentials via GitHub OIDC Provider",
-          uses: CONFIGURE_AWS_CREDENTIALS,
+          uses: DEFAULT_ACTIONS.CONFIGURE_AWS_CREDENTIALS.coordinate,
           with: {
             "role-to-assume": roleToAssume,
             "aws-region": region,
@@ -782,7 +774,7 @@ export class Publisher extends Component {
       const steps: JobStep[] = [
         {
           name: "Download build artifacts",
-          uses: DOWNLOAD_ARTIFACT,
+          uses: DEFAULT_ACTIONS.CONFIGURE_AWS_CREDENTIALS.coordinate,
           with: {
             name: BUILD_ARTIFACT_NAME,
             path: ARTIFACTS_DOWNLOAD_DIR, // this must be "dist" for publib
@@ -825,7 +817,7 @@ export class Publisher extends Component {
             {
               name: "Create Issue",
               if: "${{ failure() }}",
-              uses: ISSUE_BOT,
+              uses: DEFAULT_ACTIONS.ISSUE_BOT.coordinate,
               with: {
                 labels: this.failureIssueLabel,
                 title: `Publishing v\${{ steps.extract-version.outputs.VERSION }} to ${opts.registryName} failed`,

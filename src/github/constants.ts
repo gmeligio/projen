@@ -64,7 +64,7 @@ export const DEFAULT_ACTIONS: Record<string, ActionSpec> = {
 
   // Official GitHub Actions - Language/Runtime Setup
   SETUP_NODE: {
-    coordinate: "actions/setup-node@cdca7365b2dadb8aad0a33bc7601856ffabcc48e",
+    coordinate: "actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444",
     tag: "v5",
   },
   SETUP_JAVA: {
@@ -105,10 +105,24 @@ export const DEFAULT_ACTIONS: Record<string, ActionSpec> = {
       "peter-evans/enable-pull-request-automerge@b9890d06ee695786c8a5162e17cffea87dc2783c",
     tag: "v3",
   },
+  CODECOV: {
+    coordinate:
+      "codecov/codecov-action@0565863a31f2c772f9f0395002a31e3f06189574",
+    tag: "v5",
+  },
+  CONFIGURE_AWS_CREDENTIALS: {
+    coordinate:
+      "aws-actions/configure-aws-credentials@e3dd6a429d7300a6a4c196c26e071d42e0343502",
+    tag: "v4",
+  },
   CREATE_PULL_REQUEST: {
     coordinate:
       "peter-evans/create-pull-request@271a8d0340265f705b14b6d32b9829c1cb33d45e",
     tag: "v7",
+  },
+  ISSUE_BOT: {
+    coordinate: "imjohnbo/issue-bot@572eed14422c4d6ca37e1a1aa5e6f731b22fe20b",
+    tag: "v3",
   },
   BACKPORT: {
     coordinate:

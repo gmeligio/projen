@@ -42,10 +42,6 @@ import {
 } from "./private/consts";
 import { workflowNameForProject } from "../util/name";
 
-// actions/download-artifact@v4
-const DOWNLOAD_ARTIFACT =
-  "actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093";
-
 export interface BuildWorkflowCommonOptions {
   /**
    * Name of the buildfile (e.g. "build" becomes "build.yml").
@@ -267,7 +263,7 @@ export class BuildWorkflow extends Component {
     steps.push(
       {
         name: "Download build artifacts",
-        uses: DOWNLOAD_ARTIFACT,
+        uses: DEFAULT_ACTIONS.DOWNLOAD_ARTIFACT.coordinate,
         with: {
           name: BUILD_ARTIFACT_NAME,
           path: this.artifactsDirectory,

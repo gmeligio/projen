@@ -45,7 +45,7 @@ export class YamlFile extends ObjectFile {
    *
    * @example
    * yamlFile.addInlineComment("jobs.build.steps.0.uses", "v5");
-   * // Results in: uses: actions/checkout@sha # v5
+   * // Results in: uses: actions/checkout@commit # v5
    */
   public addInlineComment(path: string, comment: string): void {
     this.inlineComments.set(path, comment);
