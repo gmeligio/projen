@@ -39,6 +39,13 @@ Related issues:
 - Pin SHA: https://github.com/projen/projen/issues/1702
 - Renovate: https://github.com/projen/projen/issues/4331
 
+## Reference tools
+
+- https://docs.renovatebot.com/modules/manager/github-actions/
+- https://github.com/azat-io/actions-up
+- https://github.com/reugn/github-ci
+- https://docs.github.com/en/code-security/how-tos/secure-your-supply-chain/secure-your-dependencies/keeping-your-actions-up-to-date-with-dependabot
+
 ## Benefits
 
 - Uses commit SHA instead of mutable tags to:
